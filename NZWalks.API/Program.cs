@@ -1,4 +1,6 @@
+using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.EntityFrameworkCore;
+using Newtonsoft.Json;
 using NZWalks.API.Data;
 using NZWalks.API.Repositories;
 
@@ -29,6 +31,15 @@ if (app.Environment.IsDevelopment())
     app.UseSwagger();
     app.UseSwaggerUI();
 }
+
+app.UseExceptionHandler(a => a.Run(async context =>
+{
+    var exceptionHandlerPathFeature = context.Features.Get<IExceptionHandlerPathFeature>();
+    var exception = exceptionHandlerPathFeature.Error;
+    var result = JsonConvert.SerializeObject(new { error = exception.Message });
+    context.Response.ContentType = "application/json";
+    await context.Response.WriteAsync(result);
+}));
 
 app.UseHttpsRedirection();
 
